@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "conyotype",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "observability": { "enabled": true },
+  "routes": [{ "pattern": "conyotype.edwarddiesta.com", "custom_domain": true }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "conyotype",
+      "database_id": "518bf38a-7450-4812-8687-5981f1ca6ff0",
+      "migrations_dir": "db/migrations"
+    }
+  ],
+  "ratelimits": [
+    { "name": "RUNS_LIMITER", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } }
+  ]
+  // secrets (wrangler secret put): HMAC_KEY, TURNSTILE_SECRET (optional)
+}

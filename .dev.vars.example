@@ -1,0 +1,3 @@
+HMAC_KEY=
+# optional, enables Turnstile on username claim
+TURNSTILE_SECRET=

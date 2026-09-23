@@ -1,0 +1,1 @@
+CREATE INDEX `runs_board_idx` ON `runs` (`flagged`,`accuracy`,`wpm`);

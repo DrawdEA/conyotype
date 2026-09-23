@@ -1,0 +1,347 @@
+<title>Conyo Type</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=DM+Mono:wght@400;500&family=Figtree:ital,wght@0,400;0,600;0,800;1,400&display=swap">
+<style>
+:root{
+  --ground:#EEF0E4; --surface:#FBFBF5; --ink:#1F2A1C; --muted:#6B7664; --line:#D5DAC6;
+  --blue:#2447D8; --on-blue:#FFFFFF; --pink:#E5407F; --matcha:#5F8A30; --grey-bubble:#E1E5D4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#141913; --surface:#1D241B; --ink:#E9EEDF; --muted:#8E9A86; --line:#2E382B;
+    --blue:#4D6EF5; --on-blue:#FFFFFF; --pink:#FF6FA3; --matcha:#A5CF6B; --grey-bubble:#2A3327;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#141913; --surface:#1D241B; --ink:#E9EEDF; --muted:#8E9A86; --line:#2E382B;
+  --blue:#4D6EF5; --on-blue:#FFFFFF; --pink:#FF6FA3; --matcha:#A5CF6B; --grey-bubble:#2A3327;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:"Figtree",system-ui,sans-serif; font-size:16px; line-height:1.45;
+  padding-inline:16px; display:flex; justify-content:center;
+}
+.app{width:100%; max-width:760px; display:flex; flex-direction:column; gap:18px; padding-block:20px; min-height:100%}
+
+header{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap}
+.mark{font-family:"Bagel Fat One","Figtree",sans-serif; font-size:clamp(2rem,7vw,3rem); line-height:.9; margin:0; letter-spacing:-.01em}
+.mark em{font-style:normal; color:var(--blue)}
+.tag{margin:6px 0 0; color:var(--muted); font-size:.9rem}
+.best{font-size:.8rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; text-align:right}
+.best b{display:block; font-family:"DM Mono",monospace; font-size:1.25rem; color:var(--ink); letter-spacing:0; font-weight:500}
+
+.controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.seg{display:inline-flex; background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:3px}
+.seg button{
+  font:600 .85rem "Figtree",sans-serif; color:var(--muted); background:none; border:0;
+  padding:7px 14px; border-radius:999px; cursor:pointer;
+}
+.seg button[aria-pressed="true"]{background:var(--ink); color:var(--ground)}
+button:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+.restart{margin-left:auto; font:600 .85rem "Figtree",sans-serif; color:var(--ink); background:none; border:1px solid var(--line); border-radius:999px; padding:8px 14px; cursor:pointer}
+.restart kbd{font:500 .72rem "DM Mono",monospace; color:var(--muted); margin-left:6px}
+
+.stats{display:grid; grid-template-columns:repeat(4,1fr); border-block:1px solid var(--line)}
+.stat{padding:10px 0; display:flex; flex-direction:column; gap:2px}
+.stat + .stat{padding-left:14px; border-left:1px solid var(--line)}
+.stat span{font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted)}
+.stat b{font:500 clamp(1.3rem,5vw,1.9rem) "DM Mono",monospace; font-variant-numeric:tabular-nums}
+.stat.low b{color:var(--pink)}
+
+.chat{
+  flex:1; min-height:340px; background:var(--surface); border:1px solid var(--line); border-radius:22px;
+  display:flex; flex-direction:column; overflow:hidden; position:relative; cursor:text;
+}
+.gc{display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--line); font-weight:600; font-size:.9rem}
+.gc i{width:9px; height:9px; border-radius:50%; background:var(--matcha); flex:none}
+.gc small{color:var(--muted); font-weight:400; margin-left:auto}
+.thread{flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:6px; padding:14px 16px 6px; overflow:hidden; min-height:110px}
+.msg{max-width:82%; padding:8px 13px; border-radius:18px; font-size:.92rem; animation:pop .22s ease-out}
+.msg.in{align-self:flex-start; background:var(--grey-bubble); border-bottom-left-radius:6px}
+.msg.in b{display:block; font-size:.68rem; color:var(--muted); font-weight:600}
+.msg.out{align-self:flex-end; background:var(--blue); color:var(--on-blue); border-bottom-right-radius:6px}
+@keyframes pop{from{transform:translateY(10px); opacity:.2}to{transform:none; opacity:1}}
+
+.compose{padding:10px 16px 16px; display:flex; flex-direction:column; gap:8px}
+.draft{
+  position:relative; border:2px dashed var(--blue); border-radius:20px; border-bottom-right-radius:6px;
+  padding:16px 18px; font:400 clamp(1.15rem,4.2vw,1.6rem)/1.5 "DM Mono",ui-monospace,monospace;
+}
+.chat:focus-within .draft{border-style:solid}
+.draft.shake{animation:shake .15s linear}
+@keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+.w{display:inline-block; white-space:pre}
+.ch{color:var(--muted); white-space:pre}
+.ch.ok{color:var(--ink)}
+.ch.bad{color:var(--pink); text-decoration:underline; text-decoration-thickness:2px}
+.ch.bad.sp{background:var(--pink); text-decoration:none}
+.ch.cur{box-shadow:-2px 0 0 var(--blue); animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{box-shadow:-2px 0 0 transparent}}
+#typer{position:absolute; inset:0; width:100%; height:100%; opacity:0; border:0; font-size:16px; cursor:text}
+.gloss{margin:0; color:var(--muted); font-style:italic; font-size:.9rem; min-height:1.4em}
+.gloss::before{content:"translation: "; font-style:normal; font-weight:600; font-size:.7rem; text-transform:uppercase; letter-spacing:.1em}
+.hint{margin:0; font-size:.8rem; color:var(--muted)}
+
+.result{
+  position:absolute; inset:0; background:var(--surface); display:flex; flex-direction:column;
+  align-items:flex-start; justify-content:center; gap:10px; padding:28px clamp(20px,6vw,56px); cursor:default;
+}
+.result .eyebrow{font-size:.72rem; text-transform:uppercase; letter-spacing:.12em; color:var(--muted)}
+.result h2{font-family:"Bagel Fat One",sans-serif; font-weight:400; font-size:clamp(2rem,8vw,3.4rem); line-height:1; margin:0; color:var(--blue); text-wrap:balance}
+.result p{margin:0; max-width:46ch}
+.result .nums{font:500 1rem "DM Mono",monospace; color:var(--muted)}
+.result .nums b{color:var(--ink); font-weight:500}
+.again{margin-top:8px; font:800 1rem "Figtree",sans-serif; background:var(--blue); color:var(--on-blue); border:0; border-radius:999px; padding:12px 22px; cursor:pointer}
+
+footer{font-size:.75rem; color:var(--muted)}
+@media (max-width:480px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(3){padding-left:0; border-left:0; border-top:1px solid var(--line)}
+  .stat:nth-child(4){border-top:1px solid var(--line)}
+  .restart kbd{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+
+<div class="app">
+  <header>
+    <div>
+      <h1 class="mark">conyo<em>type</em></h1>
+      <p class="tag">Like, type fast or you're so not invited to the GC.</p>
+    </div>
+    <div class="best">Your best<b id="best">— wpm</b></div>
+  </header>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Mode">
+      <button id="mode-phrases" data-mode="phrases" aria-pressed="true">Full chika</button>
+      <button id="mode-terms" data-mode="terms" aria-pressed="false">Quick terms</button>
+    </div>
+    <div class="seg" role="group" aria-label="Duration">
+      <button id="dur-30" data-dur="30" aria-pressed="false">30s</button>
+      <button id="dur-60" data-dur="60" aria-pressed="true">60s</button>
+      <button id="dur-90" data-dur="90" aria-pressed="false">90s</button>
+    </div>
+    <button class="restart" id="restart">Restart<kbd>tab</kbd></button>
+  </div>
+
+  <div class="stats">
+    <div class="stat" id="stat-time"><span>Time</span><b id="time">60</b></div>
+    <div class="stat"><span>WPM</span><b id="wpm">0</b></div>
+    <div class="stat"><span>Accuracy</span><b id="acc">100%</b></div>
+    <div class="stat"><span>Sent</span><b id="sent">0</b></div>
+  </div>
+
+  <section class="chat" id="chat">
+    <div class="gc"><i></i>Blockmates GC <small>Migs, Bea, Iñigo +9</small></div>
+    <div class="thread" id="thread"></div>
+    <div class="compose">
+      <div class="draft" id="draft">
+        <span id="text"></span>
+        <input id="typer" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Type the message shown">
+      </div>
+      <p class="gloss" id="gloss"></p>
+      <p class="hint" id="hint">Just start typing, bro. Timer starts on your first key.</p>
+    </div>
+    <div class="result" id="result" hidden>
+      <span class="eyebrow">Your conyo level</span>
+      <h2 id="rank"></h2>
+      <p id="rankline"></p>
+      <p class="nums"><b id="r-wpm"></b> wpm · <b id="r-acc"></b> accuracy · <b id="r-sent"></b> sent · <b id="r-err"></b> typos</p>
+      <button class="again" id="again">Play again, dude</button>
+    </div>
+  </section>
+
+  <footer>All in good fun — one big fight, animo, go USTe, whatever, we love everyone.</footer>
+</div>
+
+<script>
+const PHRASES = [
+  ["make tusok the fishball, its so sarap","skewer the fishball, it's delicious"],
+  ["omg its so init today, i literally cannot","it's very hot today"],
+  ["lets make tambay in katip after class","let's hang out in Katipunan"],
+  ["dude the traffic in edsa is so sayang of my time","EDSA traffic is a waste of my time"],
+  ["can you make pila for me at the caf","can you line up for me at the cafeteria"],
+  ["i was so kilig, like i wanted to die","I was giddy with romantic excitement"],
+  ["yaya forgot my baon, so hassle","my nanny forgot my packed lunch"],
+  ["bro lets get samgyup in bgc after the org meeting","Korean BBQ in BGC after org"],
+  ["the prof is so terror, im gonna make iyak","the professor is strict, I'm going to cry"],
+  ["wait kuya, make para over there please","driver, please stop over there"],
+  ["dont make me asar, im so not in the mood","don't annoy me"],
+  ["taft is so far, can we just make kita in rockwell","let's just meet in Rockwell"],
+  ["my thesis groupmates are so pabigat, i cant even","my groupmates are dead weight"],
+  ["like thats so jologs, no offense","that's tacky, no offense"],
+  ["you going to the ateneo la salle game later","UAAP rivalry game plans"],
+  ["mom said were flying to japan for sembreak","semestral break trip"],
+  ["this matcha is so sarap, like legit","this matcha is really good"],
+  ["dude pare chong, where you at","friend, where are you"],
+  ["im so stressed, lets make gala in poblacion","let's go out in Poblacion"],
+  ["dont make kalat in the condo, tita will get mad","don't make a mess in the condo"],
+  ["my driver is late again, so badtrip","my driver is late, how annoying"],
+  ["its giving tita of manila energy","very fancy-auntie vibes"],
+  ["i have to make habol my requirements, deadz","I have to catch up on requirements"],
+  ["lets eat at jsec, im so gutom already","let's eat at JSEC, I'm hungry"],
+  ["the line at agno is so long, i cant","the Agno food court line is long"],
+  ["she made chika about me in the org room, so plastic","she gossiped about me, so fake"],
+  ["dont be so kuripot, its just five hundred","don't be stingy, it's only ₱500"],
+  ["my qpi is so dead this sem, dont tell my dad","my grades are bad this semester"],
+  ["is there wifi at the rest house in tali","asking about the beach house wifi"],
+  ["we should make libre him, its his birthday","we should treat him"],
+  ["no way thats so baduy, change outfit","that's unfashionable, change"],
+  ["i made sabit on the jeep once, never again","I hung off the back of a jeepney once"],
+  ["rockwell later, i need my iced oat latte","Power Plant Mall coffee run"],
+  ["sorry im late, i made tulog in the grab","I fell asleep in the Grab"],
+  ["that guy is so hambog, like who even is he","that guy is so arrogant"],
+  ["make sundo me at gate three please","pick me up at Gate 3"],
+  ["lets make sabay for lunch, im so lonely","let's have lunch together"],
+  ["enlistment is so stressful, all the slots are gone","class registration is full"],
+  ["paki make abot the sawsawan, thanks","please pass the dipping sauce"],
+  ["the aircon in the mrt is so not working","the MRT air-conditioning is broken"],
+  ["i cant make puyat tonight, i have an eight am","I can't stay up late, 8 AM class"],
+  ["lets make uwi already, my feet are so sakit","let's go home, my feet hurt"],
+  ["he didnt make libre, hes so not a gentleman","he didn't pay for the date"],
+  ["are you making bola me right now","are you flattering me insincerely"],
+  ["its so lamig in tagaytay, i should have brought my north face","it's cold in Tagaytay"]
+];
+const TERMS = [
+  ["so sayang","what a waste"],["make tusok","to skewer"],["dude pare chong","bro bro bro"],
+  ["like literally","emphasis, always"],["katip","Katipunan Ave"],["taft","DLSU's home avenue"],
+  ["kilig much","so giddy"],["so hassle","very inconvenient"],["deadz","it's over for me"],
+  ["legit","for real"],["tita vibes","fancy-auntie aura"],["one big fight","Ateneo cheer"],
+  ["animo la salle","DLSU cheer"],["samgyup","Korean BBQ"],["org room","where no one studies"],
+  ["sembreak","semestral break"],["so gulo","so chaotic"],["make pila","to line up"],
+  ["badtrip","mood ruined"],["make gala","go out"],["so baduy","so unfashionable"],
+  ["make chika","to gossip"],["kuripot","stingy"],["make libre","to treat someone"],
+  ["i cant even","I cannot"],["so jologs","so tacky"],["bgc later","Bonifacio Global City plans"],
+  ["make sundo","to pick up"],["yaya","nanny"],["so init","so hot"],["its giving","it resembles"],
+  ["make tambay","to hang out"],["pabigat","dead weight"],["so plastic","so fake"],
+  ["iced oat latte","the daily ₱220"],["make para","stop the vehicle"],["so gutom","so hungry"],
+  ["terror prof","strict professor"],["make habol","to catch up"],["rockwell","Power Plant Mall"]
+];
+const REPLIES = [
+  ["Bea","omg same"],["Migs","legit bro"],["Iñigo","so true"],["Bea","wait what"],["Migs","lol dude"],
+  ["Cheska","i cant"],["Iñigo","g"],["Cheska","literally me"],["Migs","sheesh"],["Bea","stoppp"]
+];
+const RANKS = [
+  [0,"Freshie at OrSem","Bro, you're still finding your building. It's fine, everyone made ligaw once."],
+  [20,"Org Applicant","You're making effort, we see you. Keep making practice."],
+  [35,"Katip Regular","Solid. You can make reply to the GC before the chika gets old."],
+  [50,"BGC Local","So fast, like you type while crossing High Street with an iced latte."],
+  [65,"Tita of Manila","Your thumbs have their own driver. Legit impressive."],
+  [80,"Forbes Park Final Boss","Dude. Pare. Chong. The GC literally cannot keep up with you."]
+];
+
+const $ = id => document.getElementById(id);
+const typer = $("typer"), textEl = $("text"), draft = $("draft"), thread = $("thread");
+let mode = "phrases", duration = 60;
+let queue = [], target = "", startAt = 0, timerId = 0, running = false, over = false;
+let doneChars = 0, correct = 0, errors = 0, sent = 0, prev = "";
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function readBest(){try{return +localStorage.getItem("conyo-best")||0}catch(e){return 0}}
+function writeBest(v){try{localStorage.setItem("conyo-best",v)}catch(e){}}
+function showBest(){const b=readBest();$("best").textContent=b?b+" wpm":"— wpm"}
+
+function bubble(kind,text,who){
+  const d=document.createElement("div");d.className="msg "+kind;
+  if(who){const b=document.createElement("b");b.textContent=who;d.appendChild(b)}
+  d.appendChild(document.createTextNode(text));thread.appendChild(d);
+  while(thread.children.length>5)thread.firstChild.remove();
+}
+
+function nextTarget(){
+  if(!queue.length)queue=shuffle(mode==="phrases"?PHRASES:TERMS);
+  const [t,g]=queue.pop();target=t;$("gloss").textContent=g;
+  typer.value="";prev="";typer.maxLength=target.length;render();
+}
+
+function render(){
+  const v=typer.value;textEl.textContent="";
+  let word=null;
+  for(let i=0;i<target.length;i++){
+    const c=target[i],s=document.createElement("span");
+    s.className="ch"+(i<v.length?(v[i]===c?" ok":" bad"+(c===" "?" sp":"")):"")+(i===v.length?" cur":"");
+    s.textContent=c;
+    if(c===" "){textEl.appendChild(s);word=null}
+    else{if(!word){word=document.createElement("span");word.className="w";textEl.appendChild(word)}word.appendChild(s)}
+  }
+}
+
+function prefixOk(v){let n=0;while(n<v.length&&v[n]===target[n])n++;return n}
+function elapsed(){return running?(performance.now()-startAt)/1000:0}
+function calcWpm(){const t=elapsed();return t<1?0:Math.round((doneChars+prefixOk(typer.value))/5/(t/60))}
+function calcAcc(){const n=correct+errors;return n?Math.round(correct/n*100):100}
+
+function tick(){
+  const left=Math.max(0,duration-elapsed());
+  $("time").textContent=Math.ceil(left);
+  $("stat-time").classList.toggle("low",left<=10&&running);
+  $("wpm").textContent=calcWpm();$("acc").textContent=calcAcc()+"%";$("sent").textContent=sent;
+  if(running&&left<=0)finish();
+}
+
+function start(){running=true;startAt=performance.now();$("hint").textContent="Go go go. Tab to restart.";timerId=setInterval(tick,100)}
+
+function finish(){
+  const wpm=calcWpm(),acc=calcAcc();
+  clearInterval(timerId);running=false;over=true;typer.disabled=true;
+  let r=RANKS[0];for(const x of RANKS)if(wpm>=x[0])r=x;
+  $("rank").textContent=r[1];$("rankline").textContent=r[2];
+  $("r-wpm").textContent=wpm;$("r-acc").textContent=acc+"%";$("r-sent").textContent=sent;$("r-err").textContent=errors;
+  if(wpm>readBest()){writeBest(wpm);$("rankline").textContent+=" New personal best, so proud of you."}
+  showBest();$("result").hidden=false;$("again").focus();
+}
+
+function reset(){
+  clearInterval(timerId);running=false;over=false;
+  doneChars=correct=errors=sent=0;queue=[];
+  thread.textContent="";
+  bubble("in","guys reply fast, were deciding where to eat","Migs");
+  bubble("in","if you dont answer in "+duration+"s were going without you","Bea");
+  $("result").hidden=true;typer.disabled=false;
+  $("time").textContent=duration;$("wpm").textContent=0;$("acc").textContent="100%";$("sent").textContent=0;
+  $("stat-time").classList.remove("low");
+  $("hint").textContent="Just start typing, bro. Timer starts on your first key.";
+  nextTarget();typer.focus({preventScroll:true});
+}
+
+typer.addEventListener("input",()=>{
+  if(over)return;
+  let v=typer.value.replace(/[’‘]/g,"'").toLowerCase();
+  if(v.length>target.length)v=v.slice(0,target.length);
+  if(v!==typer.value)typer.value=v;
+  if(!running&&v.length)start();
+  if(v.length>prev.length){
+    let bad=false;
+    for(let i=prev.length;i<v.length;i++){if(v[i]===target[i])correct++;else{errors++;bad=true}}
+    if(bad){draft.classList.remove("shake");void draft.offsetWidth;draft.classList.add("shake")}
+  }
+  prev=v;
+  if(v===target){
+    doneChars+=target.length+1;sent++;bubble("out",target);
+    if(sent%2===0){const [w,t]=REPLIES[Math.random()*REPLIES.length|0];setTimeout(()=>{if(!over)bubble("in",t,w)},350)}
+    nextTarget();
+  }else render();
+  tick();
+});
+typer.addEventListener("paste",e=>e.preventDefault());
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Tab"){e.preventDefault();reset();return}
+  if(over){if(e.key==="Enter"){e.preventDefault();reset()}return}
+  if(document.activeElement!==typer&&e.key.length===1&&!e.metaKey&&!e.ctrlKey)typer.focus({preventScroll:true});
+});
+$("chat").addEventListener("click",()=>{if(!over)typer.focus({preventScroll:true})});
+$("restart").addEventListener("click",reset);
+$("again").addEventListener("click",reset);
+
+document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click",()=>{
+  b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  if(b.dataset.mode)mode=b.dataset.mode;
+  if(b.dataset.dur)duration=+b.dataset.dur;
+  reset();
+}));
+
+showBest();reset();
+</script>

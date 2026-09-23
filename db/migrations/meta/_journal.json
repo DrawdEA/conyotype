@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1790091859846,
+      "tag": "0000_perpetual_boomerang",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1790150869112,
+      "tag": "0001_mighty_silhouette",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790150960749,
+      "tag": "0002_grey_firestar",
+      "breakpoints": true
+    }
+  ]
+}

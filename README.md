@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ConyoType
 
-## Getting Started
+30-second conyo typing test with one all-time leaderboard. Next.js (App Router) on Cloudflare Workers via OpenNext, D1 + Drizzle.
 
-First, run the development server:
+## Dev
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+cp .dev.vars.example .dev.vars   # set HMAC_KEY to anything
+pnpm db:migrate:local
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`pnpm test` (vitest), `pnpm lint`, `pnpm preview` (runs the real Worker build locally).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm wrangler login
+pnpm wrangler d1 create conyotype        # paste database_id into wrangler.jsonc
+pnpm db:migrate:remote
+pnpm wrangler secret put HMAC_KEY        # long random string
+pnpm run deploy
+```
 
-## Learn More
+Optional Turnstile on username claim: `wrangler secret put TURNSTILE_SECRET` and set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` at build time.
 
-To learn more about Next.js, take a look at the following resources:
+## How scores are trusted
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`/api/runs/start` signs `{runId, browser, seed, startedAt}`. The client sends its raw keystroke log to `/api/runs/finish`; the server rejects early/expired/reused tokens and recomputes the score with `lib/replay.ts` (same code the UI uses). Impossible speed or robotic rhythm gets stored but flagged and hidden from boards.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Schema change: edit `db/schema.ts` → `pnpm db:generate` → migrate. Phrase change: bump `PHRASE_SET_VERSION` in `lib/phrases.ts`.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Keyboard sounds are per-key MP3s from [kbsim](https://github.com/tplai/kbsim) (MIT) under `public/sounds/`, played through Web Audio in `features/game/keySounds.ts`.
