@@ -37,6 +37,8 @@ body {
 body {
   background: var(--ground);
   color: var(--ink);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
   font-family: var(--ff-body), system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.45;
@@ -737,6 +739,42 @@ footer a:hover {
 .pager a {
   color: var(--ink);
   font-weight: 600;
+}
+/* phones: no keyboard hints, tighter panel, controls wrap */
+button,
+.draft {
+  touch-action: manipulation; /* no double-tap zoom while hammering the box */
+}
+@media (max-width: 600px) {
+  .restart kbd {
+    display: none;
+  }
+  .actions {
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+  .sound {
+    flex-wrap: wrap;
+  }
+  .thread {
+    height: 200px;
+  }
+  .result {
+    height: 240px;
+  }
+  .result-stats {
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .chat {
+    padding: 12px 12px 14px;
+  }
+  .hero-title::after {
+    height: 28px;
+  }
+  .profile-menu {
+    width: min(260px, calc(100vw - 32px));
+  }
 }
 @media (max-width: 480px) {
   .board .when {

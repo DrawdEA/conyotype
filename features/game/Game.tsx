@@ -126,7 +126,7 @@ export function Game() {
       <div className={`top-slot${engaged ? " engaged" : ""}${needsClaim ? " gone" : ""}`}>
         <div className="hero-wrap">
           <h1 className="hero-title rise" aria-hidden={engaged}>
-            Okayyy but like,
+            Okayyy but like,{" "}
             <br className="hero-br" />
             can you make <em>chika</em> fast?
           </h1>
