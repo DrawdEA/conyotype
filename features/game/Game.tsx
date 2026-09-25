@@ -32,6 +32,21 @@ export function Game() {
   }, [view?.sent]);
 
   const over = phase === "over";
+  // english gloss under the line; remembered per browser, default on
+  const [translate, setTranslate] = useState(true);
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the preference lives in localStorage, client only
+      setTranslate(localStorage.getItem("ct-translate") !== "off");
+    } catch {}
+  }, []);
+  const setTranslatePref = (on: boolean) => {
+    setTranslate(on);
+    try {
+      localStorage.setItem("ct-translate", on ? "on" : "off");
+    } catch {}
+  };
+
   // until the first key: the headline sits in the timer slot and the bottom controls stay hidden
   const [engaged, setEngaged] = useState(false);
   // while going home the panel content fades out, resets, and fades back in
@@ -187,10 +202,20 @@ export function Game() {
                   aria-label="Type the message shown"
                 />
               </div>
+              {translate && <p className="gloss">{over ? game.nextGloss : view?.gloss}</p>}
         </div>
       </section>
       <div className={`actions${engaged ? " on" : ""}`} aria-hidden={!engaged}>
         <SoundToggle onChange={onSoundChange} />
+        <div className="sound" role="group" aria-label="Translation">
+          <span className="sound-label">Translate</span>
+          <button type="button" aria-pressed={translate} onClick={() => setTranslatePref(true)}>
+            on
+          </button>
+          <button type="button" aria-pressed={!translate} onClick={() => setTranslatePref(false)}>
+            off
+          </button>
+        </div>
         <button
           ref={restartBtn}
           type="button"

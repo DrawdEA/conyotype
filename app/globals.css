@@ -318,6 +318,22 @@ footer a:hover {
   flex-direction: column;
   gap: 8px;
 }
+/* english gloss under the line, when translation is on */
+.gloss {
+  margin: 2px 4px 0;
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.85rem;
+  min-height: 1.3em;
+}
+.gloss::before {
+  content: "translation: ";
+  font-style: normal;
+  font-weight: 600;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
 /* the typing box is exactly two lines tall in every state (landing, running, results) */
 .draft {
   position: relative;

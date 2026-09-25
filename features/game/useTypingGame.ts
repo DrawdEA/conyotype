@@ -53,7 +53,7 @@ export function useTypingGame() {
   const [localResult, setLocalResult] = useState<RunResult | null>(null);
   const [submission, setSubmission] = useState<Submission>({ status: "idle" });
   // the run that starts the moment the player types into the draft on the results screen
-  const [nextTarget, setNextTarget] = useState("");
+  const [next, setNext] = useState({ target: "", gloss: "" });
   const nextSeed = useRef(0);
 
   const run = useRef<RunState>(initialRun());
@@ -135,7 +135,8 @@ export function useTypingGame() {
       if (phaseRef.current !== "running") return;
       phaseRef.current = "over";
       nextSeed.current = randomSeed();
-      setNextTarget(entryAt(nextSeed.current, 0)[0]);
+      const [target, gloss] = entryAt(nextSeed.current, 0);
+      setNext({ target, gloss });
       const final = snapshot(limit);
       setView(final);
       setLocalResult({ wpm: final.wpm, rawWpm: 0, accuracy: final.accuracy, errors: run.current.errors, sent: final.sent });
@@ -202,5 +203,5 @@ export function useTypingGame() {
     [submit],
   );
 
-  return { phase, view, thread, localResult, submission, nextTarget, onInput, startNext, reset, restartSame, claim };
+  return { phase, view, thread, localResult, submission, nextTarget: next.target, nextGloss: next.gloss, onInput, startNext, reset, restartSame, claim };
 }
