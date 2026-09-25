@@ -13,6 +13,8 @@ export interface ChatMsg {
   kind: "in" | "out";
   text: string;
   who?: string;
+  /** english gloss, shown when translation is on; plain-english bubbles have none */
+  gloss?: string;
 }
 
 export interface GameView {
@@ -111,7 +113,7 @@ export function useTypingGame() {
       setPhase("idle");
       setLocalResult(null);
       setSubmission({ status: "idle" });
-      if (!sameConvo) setThread(scenarioFor(seed.current).opener.map(([who, text]) => ({ id: ++msgId.current, kind: "in", who, text })));
+      if (!sameConvo) setThread(scenarioFor(seed.current).opener.map(([who, text, gloss]) => ({ id: ++msgId.current, kind: "in", who, text, gloss })));
       setView(snapshot(0));
   }, [snapshot]);
 
@@ -166,11 +168,12 @@ export function useTypingGame() {
       const errorsBefore = run.current.errors;
       for (const k of keys) {
         log.current.push([t, k]);
-        const sentText = applyKey(run.current, k, entryAt(seed.current, run.current.index)[0]);
+        const [lineText, lineGloss] = entryAt(seed.current, run.current.index);
+        const sentText = applyKey(run.current, k, lineText);
         if (!sentText) continue;
-        pushMsg({ kind: "out", text: sentText });
+        pushMsg({ kind: "out", text: sentText, gloss: lineGloss });
         const reply = replyAfter(seed.current, run.current.sent - 1);
-        if (reply) setTimeout(() => phaseRef.current === "running" && pushMsg({ kind: "in", who: reply[0], text: reply[1] }), 350);
+        if (reply) setTimeout(() => phaseRef.current === "running" && pushMsg({ kind: "in", who: reply[0], text: reply[1], gloss: reply[2] }), 350);
       }
       setView(snapshot(t));
       return run.current.errors > errorsBefore;

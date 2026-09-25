@@ -296,6 +296,13 @@ footer a:hover {
   color: var(--ground);
   border-bottom-right-radius: 6px;
 }
+.msg-gloss {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  font-style: italic;
+  opacity: 0.7;
+}
 @keyframes pop {
   from {
     transform: translateY(10px);

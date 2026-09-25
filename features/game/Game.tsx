@@ -167,6 +167,7 @@ export function Game() {
               <div key={m.id} className={`msg ${m.kind}`}>
                 {m.who && <b>{m.who}</b>}
                 {m.text}
+                {translate && m.gloss && <small className="msg-gloss">{m.gloss}</small>}
               </div>
             ))}
           </div>
