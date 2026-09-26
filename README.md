@@ -30,4 +30,4 @@ Optional Turnstile on username claim: `wrangler secret put TURNSTILE_SECRET` and
 
 Schema change: edit `db/schema.ts` → `pnpm db:generate` → migrate. Phrase change: bump `PHRASE_SET_VERSION` in `lib/phrases.ts`.
 
-Keyboard sounds are per-key MP3s from [kbsim](https://github.com/tplai/kbsim) (MIT) under `public/sounds/`, played through Web Audio in `features/game/keySounds.ts`.
+Keyboard sounds are per-key WAVs (transcoded from the MP3s of) [kbsim](https://github.com/tplai/kbsim) (MIT) under `public/sounds/`, played through Web Audio in `features/game/keySounds.ts`.

@@ -3,6 +3,9 @@
 /**
  * Mechanical keyboard sounds via Web Audio. Samples: kbsim (MIT), see public/sounds/LICENSE.txt.
  * Everything is lazy: nothing loads or plays until the player types with sound on.
+ *
+ * Safari needs babysitting: its MP3 decoder rejects valid files (so the samples are WAV), its context gets
+ * "interrupted" or silently stuck when the window loses focus, and only a real gesture may resume it.
  */
 
 export const SWITCHES = {
@@ -44,76 +47,157 @@ export function writePrefs(p: SoundPrefs) {
   } catch {}
 }
 
+// --- audio context lifecycle ------------------------------------------------
+
 let ctx: AudioContext | null = null;
-let keptAlive = false;
-const buffers = new Map<string, Promise<AudioBuffer | null>>();
+let keepAliveNode: AudioBufferSourceNode | null = null;
+const raw = new Map<string, Promise<ArrayBuffer | null>>(); // fetched bytes, context-independent
+const decoded = new Map<string, AudioBuffer>(); // per current context; cleared when the context is rebuilt
+
+function newContext(): AudioContext {
+  const ac = new AudioContext();
+  decoded.clear();
+  keepAliveNode = null;
+  ac.addEventListener("statechange", () => {
+    if (ac.state !== "running") void ac.resume();
+  });
+  return ac;
+}
 
 function context(): AudioContext | null {
   if (typeof window === "undefined") return null;
-  if (!ctx) ctx = new AudioContext();
-  if (ctx.state === "suspended") void ctx.resume();
+  if (!ctx) ctx = newContext();
+  if (ctx.state !== "running") void ctx.resume();
   return ctx;
 }
 
-/**
- * Bluetooth headphones and some speakers close the output stream after a moment of silence and take up to a second
- * to reopen, swallowing the first clicks after every pause. A silent looping source keeps the stream open.
- */
+/** Silent loop: keeps the output stream open so Bluetooth headphones don't doze off and Safari doesn't idle-suspend. */
 function keepAlive(ac: AudioContext) {
-  if (keptAlive) return;
-  keptAlive = true;
-  const buf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); // one second of zeros
+  if (keepAliveNode) return;
+  const buf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
   const src = ac.createBufferSource();
   src.buffer = buf;
   src.loop = true;
   const gain = ac.createGain();
-  gain.gain.value = 0; // silent: the open stream is what keeps the device awake, not the samples
+  gain.gain.value = 0;
   src.connect(gain).connect(ac.destination);
   src.start();
+  keepAliveNode = src;
 }
 
-function load(sw: Switch, file: string): Promise<AudioBuffer | null> {
-  const url = `/sounds/${sw}/${file}.mp3`;
-  let p = buffers.get(url);
+/**
+ * Safari sometimes reports "running" while its clock has stopped (and "interrupted" can't be resumed at all).
+ * Poll the clock; if it stalls, suspend+resume; if that doesn't help, build a fresh context.
+ */
+let watchdog = 0;
+let lastTime = -1;
+let stalledTicks = 0;
+function startWatchdog() {
+  if (watchdog) return;
+  watchdog = window.setInterval(() => {
+    const ac = ctx;
+    if (!ac) return;
+    if (ac.state !== "running") {
+      void ac.resume();
+      return;
+    }
+    if (ac.currentTime === lastTime) {
+      stalledTicks++;
+      if (stalledTicks === 3) void ac.suspend().then(() => ac.resume());
+      if (stalledTicks >= 8) {
+        // give up on this one
+        void ac.close().catch(() => {});
+        ctx = newContext();
+        keepAlive(ctx);
+        stalledTicks = 0;
+      }
+    } else stalledTicks = 0;
+    lastTime = ac.currentTime;
+  }, 500);
+}
+
+let gestureHooked = false;
+function hookGestures() {
+  if (gestureHooked || typeof window === "undefined") return;
+  gestureHooked = true;
+  const wake = () => {
+    const ac = context();
+    if (ac) keepAlive(ac);
+  };
+  // Safari only resumes from a "real" gesture and doesn't always count keydown as one
+  window.addEventListener("pointerdown", wake, { passive: true });
+  window.addEventListener("keydown", wake, { passive: true });
+  // and it parks the context whenever the window goes to the background
+  document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && wake());
+  window.addEventListener("focus", wake);
+  window.addEventListener("pageshow", wake);
+}
+
+// --- samples -----------------------------------------------------------------
+
+function fetchBytes(sw: Switch, file: string): Promise<ArrayBuffer | null> {
+  const url = `/sounds/${sw}/${file}.wav`;
+  let p = raw.get(url);
   if (!p) {
     p = fetch(url)
-      .then((r) => r.arrayBuffer())
-      .then((b) => context()?.decodeAudioData(b) ?? null)
+      .then((r) => (r.ok ? r.arrayBuffer() : null))
       .catch(() => null);
-    buffers.set(url, p);
+    raw.set(url, p);
+    // a failed fetch shouldn't poison the cache forever
+    void p.then((b) => b === null && raw.delete(url));
   }
   return p;
 }
 
-let gestureHooked = false;
-
-/** Warm the cache so the first keystroke isn't late. */
-export function preload(sw: Switch) {
-  for (const files of Object.values(FILES)) for (const f of files) void load(sw, f);
-  // Safari only resumes a suspended context from a "real" gesture and doesn't always count keydown as one,
-  // so the first click/tap anywhere (you click the box before typing) wakes it up
-  if (!gestureHooked && typeof window !== "undefined") {
-    gestureHooked = true;
-    const wake = () => {
-      const ac = context();
-      if (ac) {
-        void ac.resume();
-        keepAlive(ac);
+/** Promise form first; Safari occasionally rejects there but succeeds with the old callback signature. */
+function decode(ac: AudioContext, bytes: ArrayBuffer): Promise<AudioBuffer | null> {
+  return new Promise((resolve) => {
+    const copy = bytes.slice(0); // decodeAudioData detaches the buffer it's given
+    ac.decodeAudioData(copy).then(resolve, () => {
+      try {
+        ac.decodeAudioData(
+          bytes.slice(0),
+          (b) => resolve(b),
+          () => resolve(null),
+        );
+      } catch {
+        resolve(null);
       }
-    };
-    window.addEventListener("pointerdown", wake, { passive: true });
-    window.addEventListener("keydown", wake, { passive: true });
-  }
+    });
+  });
+}
+
+async function load(ac: AudioContext, sw: Switch, file: string): Promise<AudioBuffer | null> {
+  const key = `${sw}/${file}`;
+  const hit = decoded.get(key);
+  if (hit) return hit;
+  const bytes = await fetchBytes(sw, file);
+  if (!bytes) return null;
+  const buf = await decode(ac, bytes);
+  if (buf && ctx === ac) decoded.set(key, buf);
+  return buf;
+}
+
+/** Warm the caches so the first keystroke isn't late. */
+export function preload(sw: Switch) {
+  hookGestures();
+  const ac = context();
+  if (!ac) return;
+  startWatchdog();
+  for (const files of Object.values(FILES)) for (const f of files) void load(ac, sw, f);
 }
 
 export function play(sw: Switch, kind: KeyKind, volume = 0.5) {
   const ac = context();
   if (!ac) return;
   keepAlive(ac);
+  startWatchdog();
   const files = FILES[kind];
-  const file = files[Math.floor(Math.random() * files.length)];
-  void load(sw, file).then((buf) => {
-    if (!buf) return;
+  const pick = files[Math.floor(Math.random() * files.length)];
+  void load(ac, sw, pick).then(async (buf) => {
+    // if this one file won't decode, any sibling sample beats silence
+    if (!buf) for (const alt of files) if ((buf = await load(ac, sw, alt))) break;
+    if (!buf || ctx !== ac) return;
     const src = ac.createBufferSource();
     src.buffer = buf;
     // a little pitch jitter so a fast run doesn't sound like a machine gun
